@@ -72,7 +72,7 @@
 (defconst jai-font-lock-defaults
   `(
     ;; Keywords
-    (,(jai-kwrx jai-keywords) 1 font-lock-keyword-face)
+    (,(jai-keywords-rx jai-keywords) 1 font-lock-keyword-face)
 
     ;; single quote characters
     ("\\('[[:word:]]\\)\\>" 1 font-lock-constant-face)
