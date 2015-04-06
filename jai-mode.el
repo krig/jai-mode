@@ -108,7 +108,7 @@
   (defmacro setq-local (var val)
     `(set (make-local-variable ',var) ,val)))
 
-(defconst jai--defun-rx "\(.+\).+\{")
+(defconst jai--defun-rx "\(.*\).*\{")
 
 (defmacro jai-paren-level ()
   `(car (syntax-ppss)))
