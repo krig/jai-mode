@@ -103,6 +103,11 @@
     ("---" . font-lock-constant-face)
     ))
 
+;; add setq-local for older emacs versions
+(unless (fboundp 'setq-local)
+  (defmacro setq-local (var val)
+    `(set (make-local-variable ',var) ,val)))
+
 ;;;###autoload
 (define-derived-mode jai-mode prog-mode "Jai Mode"
   :syntax-table jai-mode-syntax-table
