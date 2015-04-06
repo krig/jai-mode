@@ -4,8 +4,6 @@
 (require 'rx)
 (require 'js)
 
-(defcustom jai-indent-level 4 "Number of spaces per indent.")
-
 (defconst jai-mode-syntax-table
   (let ((table (make-syntax-table)))
     (modify-syntax-entry ?\" "\"" table)
@@ -64,19 +62,6 @@
 (defconst jai-hat-type-rx (rx (group (and "^" (1+ word)))))
 (defconst jai-dollar-type-rx (rx (group "$" (or (1+ word) (opt "$")))))
 (defconst jai-number-rx (rx (group (and (opt "0x") (1+ num) (opt (and "." (0+ num))) (opt (in "fgFG"))))))
-
-(defconst jai-procedure-rx (rx (and "("
-                                    (0+ anything)
-                                    ")"
-                                    (0+ space)
-                                    (opt (and "->"
-                                              (0+ space)
-                                              (opt "(")
-                                              (0+ anything)
-                                              (opt ")")))
-                                    (0+ space)
-                                    "{")))
-
 
 (defconst jai-font-lock-defaults
   `(
