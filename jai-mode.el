@@ -61,7 +61,13 @@
 
 (defconst jai-hat-type-rx (rx (group (and "^" (1+ word)))))
 (defconst jai-dollar-type-rx (rx (group "$" (or (1+ word) (opt "$")))))
-(defconst jai-number-rx (rx (group (and (opt "0x") (1+ num) (opt (and "." (0+ num))) (opt (in "fgFG"))))))
+(defconst jai-number-rx
+  (rx (and
+       symbol-start
+       (or (and (+ digit) (opt (and (any "eE") (opt (any "-+")) (+ digit))))
+           (and "0" (any "xX") (+ hex-digit)))
+       (opt (and (any "_" "A-Z" "a-z") (* (any "_" "A-Z" "a-z" "0-9"))))
+       symbol-end)))
 
 (defconst jai-font-lock-defaults
   `(
