@@ -108,16 +108,58 @@
   (defmacro setq-local (var val)
     `(set (make-local-variable ',var) ,val)))
 
+(defconst jai--defun-rx
+  (rx (and ?\( (* (not (any ?\))) ?\) (* (not (any ?{))) ?{))))
+
+(defmacro jai-paren-level ()
+  `(car (syntax-ppss)))
+
+(defun jai-line-is-defun ()
+  "return t if current line begins a procedure"
+  (interactive)
+  (save-excursion
+    (beginning-of-line)
+    (let (found)
+      (while (and (not (eolp)) (not found))
+        (if (looking-at jai--defun-rx)
+            (setq found t)
+          (forward-char 1)))
+      (message "found: %s" found)
+      found)))
+
+(defun jai-beginning-of-defun (&optional count)
+  "Go to line on which current function starts."
+  (interactive)
+  (setq count (or count 1))
+  (dotimes (n count)
+    (let ((start-point (point)))
+      (beginning-of-line)
+      (while (not (or (bobp) (jai--line-is-defun)))
+        (line-move -1)))))
+
+(defun jai-end-of-defun ()
+  "Go to line on which current function ends."
+  (interactive)
+  (jai-beginning-of-defun)
+  (end-of-line)
+  (let ((orig-level (jai-paren-level)))
+    (if (<= orig-level 0)
+        (skip-chars-forward "^}")
+      (while (>= (jai-paren-level) orig-level)
+        (skip-chars-forward "^}")
+        (forward-char)))))
+
 ;;;###autoload
 (define-derived-mode jai-mode prog-mode "Jai Mode"
   :syntax-table jai-mode-syntax-table
+  :group 'jai
   (setq-local comment-start-skip "\\(//+\\|/\\*+\\)\\s *")
   (setq-local comment-start "/*")
   (setq-local comment-end "*/")
   (setq-local indent-line-function 'js-indent-line)
   (setq-local font-lock-defaults '(jai-font-lock-defaults))
-  (setq-local beginning-of-defun-function 'js-beginning-of-defun)
-  (setq-local end-of-defun-function 'js-end-of-defun)
+  (setq-local beginning-of-defun-function 'jai-beginning-of-defun)
+  (setq-local end-of-defun-function 'jai-end-of-defun)
 
   (font-lock-fontify-buffer))
 
