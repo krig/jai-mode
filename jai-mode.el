@@ -130,14 +130,14 @@
   (interactive)
   (let ((orig-level (jai-paren-level)))
     (while (and
-            (not (jai--line-is-defun))
+            (not (jai-line-is-defun))
             (not (bobp))
             (> orig-level 0))
       (setq orig-level (jai-paren-level))
       (while (>= (jai-paren-level) orig-level)
         (skip-chars-backward "^{")
         (backward-char))))
-  (if (jai--line-is-defun)
+  (if (jai-line-is-defun)
       (beginning-of-line)))
 
 (defun jai-end-of-defun ()
