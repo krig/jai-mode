@@ -40,7 +40,7 @@
   '("cast" "it"))
 
 (defconst jai-keywords
-  '("if" "else" "while" "for" "switch" "case" "struct" "return"))
+  '("if" "else" "then" "while" "for" "switch" "case" "struct" "return"))
 
 (defconst jai-constants
   '("null" "true" "false"))
@@ -48,7 +48,8 @@
 (defconst jai-typenames
   '("int" "u64" "u32" "u16" "u8"
     "s64" "s32" "s16" "s8" "float"
-    "float32" "float64" "string"))
+    "float32" "float64" "string"
+    "bool"))
 
 (defun jai-wrap-word-rx (s)
   (concat "\\<" s "\\>"))
@@ -77,8 +78,10 @@
 (defconst jai-font-lock-defaults
   `(
     ;; Keywords
-    (,(jai-kwrx jai-keywords)
-     1 font-lock-keyword-face)
+    (,(jai-kwrx jai-keywords) 1 font-lock-keyword-face)
+
+    ;; single quote characters
+    ("\\('[[:word:]]\\)\\>" 1 font-lock-constant-face)
 
     ;; Variables
     (,(jai-keywords-rx jai-builtins) 1 font-lock-variable-name-face)
