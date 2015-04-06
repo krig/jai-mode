@@ -108,8 +108,7 @@
   (defmacro setq-local (var val)
     `(set (make-local-variable ',var) ,val)))
 
-(defconst jai--defun-rx
-  (rx (and ?\( (* (not (any ?\))) ?\) (* (not (any ?{))) ?{))))
+(defconst jai--defun-rx "\(.+\).+\{")
 
 (defmacro jai-paren-level ()
   `(car (syntax-ppss)))
@@ -124,27 +123,32 @@
         (if (looking-at jai--defun-rx)
             (setq found t)
           (forward-char 1)))
-      (message "found: %s" found)
       found)))
 
 (defun jai-beginning-of-defun (&optional count)
   "Go to line on which current function starts."
   (interactive)
-  (setq count (or count 1))
-  (dotimes (n count)
-    (let ((start-point (point)))
-      (beginning-of-line)
-      (while (not (or (bobp) (jai--line-is-defun)))
-        (line-move -1)))))
+  (let ((orig-level (jai-paren-level)))
+    (while (and
+            (not (jai--line-is-defun))
+            (not (bobp))
+            (> orig-level 0))
+      (setq orig-level (jai-paren-level))
+      (while (>= (jai-paren-level) orig-level)
+        (skip-chars-backward "^{")
+        (backward-char))))
+  (if (jai--line-is-defun)
+      (beginning-of-line)))
 
 (defun jai-end-of-defun ()
   "Go to line on which current function ends."
   (interactive)
-  (jai-beginning-of-defun)
-  (end-of-line)
   (let ((orig-level (jai-paren-level)))
-    (if (<= orig-level 0)
-        (skip-chars-forward "^}")
+    (when (> orig-level 0)
+      (jai-beginning-of-defun)
+      (end-of-line)
+      (setq orig-level (jai-paren-level))
+      (skip-chars-forward "^}")
       (while (>= (jai-paren-level) orig-level)
         (skip-chars-forward "^}")
         (forward-char)))))
