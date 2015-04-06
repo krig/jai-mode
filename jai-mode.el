@@ -153,10 +153,14 @@
         (skip-chars-forward "^}")
         (forward-char)))))
 
+(defalias 'jai-parent-mode
+ (if (fboundp 'prog-mode) 'prog-mode 'fundamental-mode))
+
 ;;;###autoload
-(define-derived-mode jai-mode prog-mode "Jai Mode"
-  :syntax-table jai-mode-syntax-table
-  :group 'jai
+(define-derived-mode jai-mode jai-parent-mode "Jai"
+  (setq bidi-paragraph-direction 'left-to-right)
+  (setq-local require-final-newline mode-require-final-newline)
+  (setq-local parse-sexp-ignore-comments t)
   (setq-local comment-start-skip "\\(//+\\|/\\*+\\)\\s *")
   (setq-local comment-start "/*")
   (setq-local comment-end "*/")
