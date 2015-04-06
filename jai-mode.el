@@ -158,18 +158,20 @@
 
 ;;;###autoload
 (define-derived-mode jai-mode jai-parent-mode "Jai"
-  (setq bidi-paragraph-direction 'left-to-right)
-  (setq-local require-final-newline mode-require-final-newline)
-  (setq-local parse-sexp-ignore-comments t)
-  (setq-local comment-start-skip "\\(//+\\|/\\*+\\)\\s *")
-  (setq-local comment-start "/*")
-  (setq-local comment-end "*/")
-  (setq-local indent-line-function 'js-indent-line)
-  (setq-local font-lock-defaults '(jai-font-lock-defaults))
-  (setq-local beginning-of-defun-function 'jai-beginning-of-defun)
-  (setq-local end-of-defun-function 'jai-end-of-defun)
+ :syntax-table jai-mode-syntax-table
+ :group 'jai
+ (setq bidi-paragraph-direction 'left-to-right)
+ (setq-local require-final-newline mode-require-final-newline)
+ (setq-local parse-sexp-ignore-comments t)
+ (setq-local comment-start-skip "\\(//+\\|/\\*+\\)\\s *")
+ (setq-local comment-start "/*")
+ (setq-local comment-end "*/")
+ (setq-local indent-line-function 'js-indent-line)
+ (setq-local font-lock-defaults '(jai-font-lock-defaults))
+ (setq-local beginning-of-defun-function 'jai-beginning-of-defun)
+ (setq-local end-of-defun-function 'jai-end-of-defun)
 
-  (font-lock-fontify-buffer))
+ (font-lock-fontify-buffer))
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.jai\\'" . jai-mode))
