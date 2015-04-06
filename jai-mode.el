@@ -2,6 +2,7 @@
 
 (require 'cl)
 (require 'rx)
+(require 'js)
 
 (defcustom jai-indent-level 4 "Number of spaces per indent.")
 
@@ -37,7 +38,7 @@
     table))
 
 (defconst jai-builtins
-  '("cast" "it"))
+  '("cast" "it" "type_info" "size_of"))
 
 (defconst jai-keywords
   '("if" "else" "then" "while" "for" "switch" "case" "struct" "enum"
@@ -185,44 +186,13 @@ STOP-AT-STRING is not true, over strings."
         (skip-chars-forward "^}")
         (forward-char)))))
 
-(defun jai-indent-line ()
-   "Indent current line of jai code."
-   (interactive)
-   (let ((savep (> (current-column) (current-indentation)))
-         (indent (condition-case nil (* jai-indent-level (max (jai-calculate-indentation) 0))
-                   (error 0))))
-     (if savep
-	 (save-excursion (indent-line-to indent))
-       (indent-line-to indent))))
-
-(defun jai-calculate-indentation ()
-  "Return the column to which the current line should be indented."
-    (let ((indent-level 0))
-      (save-excursion
-        (beginning-of-line)
-        (while (not (bobp))
-          ;; TODO search backwards
-          (backward-char)
-          (cond ((looking-at "{") (setq indent-level (+ 1 indent-level)))
-                ((looking-at "}") (setq indent-level (- indent-level 1))))))
-      (save-excursion
-        (beginning-of-line)
-        (let ((p0 (point)))
-          (end-of-line)
-          (while (and (>= (point) p0)
-                      (not (looking-at "{")))
-            (when (looking-at "}")
-              (setq indent-level (- indent-level 1)))
-            (backward-char))))
-      indent-level))
-
 ;;;###autoload
 (define-derived-mode jai-mode prog-mode "Jai Mode"
   :syntax-table jai-mode-syntax-table
   (setq-local comment-start-skip "\\(//+\\|/\\*+\\)\\s *")
   (setq-local comment-start "/*")
   (setq-local comment-end "*/")
-  (setq-local indent-line-function 'jai-indent-line)
+  (setq-local indent-line-function 'js-indent-line)
   (setq-local font-lock-defaults '(jai-font-lock-defaults))
   (setq-local beginning-of-defun-function 'jai-beginning-of-defun)
   (setq-local end-of-defun-function 'jai-end-of-defun)
