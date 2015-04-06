@@ -1,20 +1,32 @@
 ;; jai-mode.el - very basic jai mode
 
 (require 'cl)
+(require 'rx)
 
 (defcustom jai-indent-level 4 "Number of spaces per indent.")
 
 (defconst jai-mode-syntax-table
   (let ((table (make-syntax-table)))
-    ;; ' is a string delimiter
-    (modify-syntax-entry ?' "\"" table)
-    ;; " is a string delimiter too
     (modify-syntax-entry ?\" "\"" table)
     (modify-syntax-entry ?\\ "\\" table)
 
     ;; additional symbols
     (modify-syntax-entry ?_ "w" table)
-    (modify-syntax-entry ?: "_" table)
+
+    (modify-syntax-entry ?' "." table)
+    (modify-syntax-entry ?: "." table)
+    (modify-syntax-entry ?+  "." table)
+    (modify-syntax-entry ?-  "." table)
+    (modify-syntax-entry ?%  "." table)
+    (modify-syntax-entry ?&  "." table)
+    (modify-syntax-entry ?|  "." table)
+    (modify-syntax-entry ?^  "." table)
+    (modify-syntax-entry ?!  "." table)
+    (modify-syntax-entry ?$  "/" table)
+    (modify-syntax-entry ?=  "." table)
+    (modify-syntax-entry ?<  "." table)
+    (modify-syntax-entry ?>  "." table)
+    (modify-syntax-entry ??  "." table)
 
     ;; Modify some syntax entries to allow nested block comments
     (modify-syntax-entry ?/ ". 124b" table)
@@ -24,33 +36,59 @@
 
     table))
 
-(defun jai-kwrx (&rest keywords)
-  "build keyword regexp"
-  (concat "\\<" (regexp-opt keywords t) "\\>"))
+(defconst jai-builtins
+  '("cast" "it"))
 
 (defconst jai-keywords
+  '("if" "else" "while" "for" "switch" "case" "struct" "return"))
+
+(defconst jai-constants
+  '("null" "true" "false"))
+
+(defconst jai-typenames
+  '("int" "u64" "u32" "u16" "u8"
+    "s64" "s32" "s16" "s8" "float"
+    "float32" "float64" "string"))
+
+(defun jai-wrap-word-rx (s)
+  (concat "\\<" s "\\>"))
+
+(defun jai-keywords-rx (keywords)
+  "build keyword regexp"
+  (jai-wrap-word-rx (regexp-opt keywords t)))
+
+(defconst jai-hat-type-rx (rx (group (and "^" (1+ word)))))
+(defconst jai-dollar-type-rx (rx (group "$" (or (1+ word) (opt "$")))))
+(defconst jai-number-rx (rx (group (and (opt "0x") (1+ num) (opt (and "." (0+ num))) (opt (in "fgFG"))))))
+
+(defconst jai-font-lock-defaults
   `(
     ;; Keywords
-    (,(jai-kwrx "if" "else" "while" "for" "switch" "case" "struct" "return")
+    (,(jai-kwrx jai-keywords)
      1 font-lock-keyword-face)
 
     ;; Variables
-    (,(jai-kwrx "it" "cast") 1 font-lock-variable-name-face)
+    (,(jai-keywords-rx jai-builtins) 1 font-lock-variable-name-face)
+
+    ;; Constants
+    (,(jai-keywords-rx jai-constants) 1 font-lock-constant-face)
 
     ;; Hash directives
-    ("\\(#\\w+\\)" 1 font-lock-constant-face)
+    ("#\\w+" . font-lock-preprocessor-face)
 
     ;; At directives
-    ("\\(@\\w+\\)" 1 font-lock-constant-face)
+    ("@\\w+" . font-lock-preprocessor-face)
 
     ;; Strings
-    ("\\(\\\".*\\\"\\)" 1 font-lock-string-face)
+    ("\\\".*\\\"" . font-lock-string-face)
+
+    ;; Numbers
+    (,(jai-wrap-word-rx jai-number-rx) . font-lock-constant-face)
 
     ;; Types
-    (,(jai-kwrx "int" "u64" "u32" "u16" "u8" "s64" "s32" "s16" "s8" "float" "float32" "float64" "double" "string") 1 font-lock-type-face)
-    ("\\(\\^\\w+\\)" 1 font-lock-type-face)
-    ("\\<\\($\\w+\\)\\>" 1 font-lock-type-face)
-    ("\\<\\(${2}\\)\\>" 1 font-lock-type-face)
+    (,(jai-keywords-rx jai-typenames) 1 font-lock-type-face)
+    (,jai-hat-type-rx 1 font-lock-type-face)
+    (,jai-dollar-type-rx 1 font-lock-type-face)
     ))
 
 
@@ -92,7 +130,7 @@
   (setq-local comment-start "/*")
   (setq-local comment-end "*/")
   (setq-local indent-line-function 'jai-indent-line)
-  (setq-local font-lock-defaults '(jai-keywords))
+  (setq-local font-lock-defaults '(jai-font-lock-defaults))
   (font-lock-fontify-buffer))
 
 ;;;###autoload
