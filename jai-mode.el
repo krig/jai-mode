@@ -40,7 +40,9 @@
   '("cast" "it"))
 
 (defconst jai-keywords
-  '("if" "else" "then" "while" "for" "switch" "case" "struct" "return"))
+  '("if" "else" "then" "while" "for" "switch" "case" "struct" "enum"
+    "return" "new" "remove" "continue" "break" "defer" "inline" "no_inline"
+    "using" "SOA"))
 
 (defconst jai-constants
   '("null" "true" "false"))
@@ -105,6 +107,8 @@
     (,(jai-keywords-rx jai-typenames) 1 font-lock-type-face)
     (,jai-hat-type-rx 1 font-lock-type-face)
     (,jai-dollar-type-rx 1 font-lock-type-face)
+
+    ("---" . font-lock-constant-face)
     ))
 
 (defmacro jai-paren-level ()
