@@ -61,6 +61,19 @@
 (defconst jai-dollar-type-rx (rx (group "$" (or (1+ word) (opt "$")))))
 (defconst jai-number-rx (rx (group (and (opt "0x") (1+ num) (opt (and "." (0+ num))) (opt (in "fgFG"))))))
 
+(defconst jai-procedure-rx (rx (and "("
+                                    (0+ anything)
+                                    ")"
+                                    (0+ space)
+                                    (opt (and "->"
+                                              (0+ space)
+                                              (opt "(")
+                                              (0+ anything)
+                                              (opt ")")))
+                                    (0+ space)
+                                    "{")))
+
+
 (defconst jai-font-lock-defaults
   `(
     ;; Keywords
@@ -91,6 +104,79 @@
     (,jai-dollar-type-rx 1 font-lock-type-face)
     ))
 
+(defmacro jai-paren-level ()
+  `(car (syntax-ppss)))
+
+(defmacro jai-in-string-or-comment-p ()
+  `(nth 8 (syntax-ppss)))
+
+(defmacro jai-in-string-p ()
+  `(nth 3 (syntax-ppss)))
+
+(defmacro jai-in-comment-p ()
+  `(nth 4 (syntax-ppss)))
+
+(defmacro jai-goto-beginning-of-string-or-comment ()
+  `(goto-char (nth 8 (syntax-ppss))))
+
+
+(defun jai--backward-irrelevant (&optional stop-at-string)
+  "Skips backwards over any characters that are irrelevant for
+indentation and related tasks.
+
+It skips over whitespace, comments, cases and labels and, if
+STOP-AT-STRING is not true, over strings."
+
+  (let (pos (start-pos (point)))
+    (skip-chars-backward "\n\s\t")
+    (if (and (save-excursion (beginning-of-line) (jai-in-string-p)) (looking-back "`") (not stop-at-string))
+        (backward-char))
+    (if (and (jai-in-string-p) (not stop-at-string))
+        (jai-goto-beginning-of-string-or-comment))
+    (if (looking-back "\\*/")
+        (backward-char))
+    (if (jai-in-comment-p)
+        (jai-goto-beginning-of-string-or-comment))
+    (setq pos (point))
+    (beginning-of-line)
+    (goto-char pos)
+    (if (/= start-pos (point))
+        (jai--backward-irrelevant stop-at-string))
+    (/= start-pos (point))))
+
+(defun jai-beginning-of-defun (&optional count)
+  "Try to find the beginning of the enclosing procedure"
+  (unless (bolp)
+    (end-of-line))
+  (setq count (or count 1))
+  (let (first failure)
+    (dotimes (i (abs count))
+      (setq first t)
+      (while (and (not failure)
+                  (or first (jai-in-string-or-comment-p)))
+        (if (>= count 0)
+            (progn
+              (jai--backward-irrelevant)
+              (if (not (re-search-backward jai-procedure-rx nil t))
+                  (setq failure t)))
+          (if (looking-at jai-procedure-rx)
+              (forward-char))
+          (if (not (re-search-forward jai-procedure-rx nil t))
+              (setq failure t)))
+        (setq first nil)))
+    (if (< count 0)
+        (beginning-of-line))
+    (not failure)))
+
+(defun jai-end-of-defun ()
+  "Try to find the end of the enclosing procedure"
+  (interactive)
+  (let ((orig-level (jai-paren-level)))
+    (if (<= orig-level 0)
+      (skip-chars-forward "^}")
+      (while (>= (jai-paren-level) orig-level)
+        (skip-chars-forward "^}")
+        (forward-char)))))
 
 (defun jai-indent-line ()
    "Indent current line of jai code."
@@ -131,6 +217,9 @@
   (setq-local comment-end "*/")
   (setq-local indent-line-function 'jai-indent-line)
   (setq-local font-lock-defaults '(jai-font-lock-defaults))
+  (setq-local beginning-of-defun-function 'jai-beginning-of-defun)
+  (setq-local end-of-defun-function 'jai-end-of-defun)
+
   (font-lock-fontify-buffer))
 
 ;;;###autoload
