@@ -156,6 +156,16 @@
 (defalias 'jai-parent-mode
  (if (fboundp 'prog-mode) 'prog-mode 'fundamental-mode))
 
+;; imenu hookup
+(add-hook 'jai-mode-hook
+      (lambda ()
+        (setq imenu-generic-expression
+          '(("function" "^\\(.*\\) :: *\\(.*\\) " 1)
+            ("type" "^\\(.*\\) : *\\(.*\\) : " 1))
+        )
+      )
+)
+
 ;;;###autoload
 (define-derived-mode jai-mode jai-parent-mode "Jai"
  :syntax-table jai-mode-syntax-table
