@@ -160,11 +160,27 @@
 (add-hook 'jai-mode-hook
       (lambda ()
         (setq imenu-generic-expression
-          '(("function" "^\\(.*\\) :: *\\(.*\\) " 1)
-            ("type" "^\\(.*\\) : *\\(.*\\) : " 1))
+          '(
+            ("type" "^\\(.*:*.*\\) : " 1)
+	    ("function" "^\\(.*\\) :: " 1)
+	    ("struct" "^\\(.*\\) *:: *\\(struct\\)\\(.*\\){" 1)
+	    )
         )
       )
 )
+
+;; NOTE: taken from the scala-indent package and modified for Jai.
+;;   Still uses the js-indent-line as a base, which will have to be
+;;   replaced when the language is more mature.
+(defun jai--indent-on-parentheses ()
+  (when (and (= (char-syntax (char-before)) ?\))
+             (= (save-excursion (back-to-indentation) (point)) (1- (point))))
+    (js-indent-line)))
+
+(defun jai--add-self-insert-hooks ()
+  (add-hook 'post-self-insert-hook
+            'jai--indent-on-parentheses)
+  )
 
 ;;;###autoload
 (define-derived-mode jai-mode jai-parent-mode "Jai"
@@ -180,6 +196,9 @@
  (setq-local font-lock-defaults '(jai-font-lock-defaults))
  (setq-local beginning-of-defun-function 'jai-beginning-of-defun)
  (setq-local end-of-defun-function 'jai-end-of-defun)
+
+ ;; add indent functionality to some characters
+ (jai--add-self-insert-hooks)
 
  (font-lock-fontify-buffer))
 
