@@ -39,7 +39,7 @@
   '("cast" "it" "type_info" "size_of"))
 
 (defconst jai-keywords
-  '("if" "else" "then" "while" "for" "switch" "case" "struct" "enum"
+  '("if" "ifx" "else" "then" "while" "for" "switch" "case" "struct" "enum"
     "return" "new" "remove" "continue" "break" "defer" "inline" "no_inline"
     "using" "SOA"))
 
