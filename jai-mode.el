@@ -3,6 +3,7 @@
 (require 'cl)
 (require 'rx)
 (require 'js)
+(require 'compile)
 
 (defconst jai-mode-syntax-table
   (let ((table (make-syntax-table)))
@@ -204,5 +205,10 @@
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.jai\\'" . jai-mode))
+
+(defconst jai--error-regexp
+  "^\\([^ :]+\\):\\([0-9]+\\),\\([0-9]+\\):")
+(push `(jai ,jai--error-regexp 1 2 3 2) compilation-error-regexp-alist-alist)
+(push 'jai compilation-error-regexp-alist)
 
 (provide 'jai-mode)
