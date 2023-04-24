@@ -1,0 +1,9 @@
+# Compiled
+*.elc
+
+# Packaging
+.eask
+dist/
+
+# Backup files
+*~

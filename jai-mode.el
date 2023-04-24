@@ -1,6 +1,36 @@
-;; jai-mode.el - very basic jai mode
+;;; jai-mode.el --- Major mdoe for JAI  -*- lexical-binding: t; -*-
 
-(require 'cl)
+;; Copyright (C) 2015-2023  Kristoffer Grönlund
+
+;; Author: Kristoffer Grönlund <k@ziran.se>
+;; Maintainer: Kristoffer Grönlund <k@ziran.se>
+;; URL: https://github.com/krig/jai-mode
+;; Version: 0.0.1
+;; Package-Requires: ((emacs "26.1"))
+;; Keywords: languages
+
+;; This file is not part of GNU Emacs.
+
+;; This program is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+;;; Commentary:
+;;
+;; Major mdoe for JAI
+;;
+
+;;; Code:
+
 (require 'rx)
 (require 'js)
 (require 'compile)
@@ -71,8 +101,7 @@
        symbol-end)))
 
 (defconst jai-font-lock-defaults
-  `(
-    ;; Keywords
+  `(;; Keywords
     (,(jai-keywords-rx jai-keywords) 1 font-lock-keyword-face)
 
     ;; single quote characters
@@ -101,8 +130,7 @@
     (,jai-hat-type-rx 1 font-lock-type-face)
     (,jai-dollar-type-rx 1 font-lock-type-face)
 
-    ("---" . font-lock-constant-face)
-    ))
+    ("---" . font-lock-constant-face)))
 
 ;; add setq-local for older emacs versions
 (unless (fboundp 'setq-local)
@@ -126,7 +154,7 @@
           (forward-char 1)))
       found)))
 
-(defun jai-beginning-of-defun (&optional count)
+(defun jai-beginning-of-defun ()
   "Go to line on which current function starts."
   (interactive)
   (let ((orig-level (jai-paren-level)))
@@ -138,8 +166,8 @@
       (while (>= (jai-paren-level) orig-level)
         (skip-chars-backward "^{")
         (backward-char))))
-  (if (jai-line-is-defun)
-      (beginning-of-line)))
+  (when (jai-line-is-defun)
+    (beginning-of-line)))
 
 (defun jai-end-of-defun ()
   "Go to line on which current function ends."
@@ -155,20 +183,15 @@
         (forward-char)))))
 
 (defalias 'jai-parent-mode
- (if (fboundp 'prog-mode) 'prog-mode 'fundamental-mode))
+  (if (fboundp 'prog-mode) 'prog-mode 'fundamental-mode))
 
 ;; imenu hookup
 (add-hook 'jai-mode-hook
-      (lambda ()
-        (setq imenu-generic-expression
-          '(
-            ("type" "^\\(.*:*.*\\) : " 1)
-	    ("function" "^\\(.*\\) :: " 1)
-	    ("struct" "^\\(.*\\) *:: *\\(struct\\)\\(.*\\){" 1)
-	    )
-        )
-      )
-)
+          (lambda ()
+            (setq imenu-generic-expression
+                  '(("type" "^\\(.*:*.*\\) : " 1)
+                    ("function" "^\\(.*\\) :: " 1)
+                    ("struct" "^\\(.*\\) *:: *\\(struct\\)\\(.*\\){" 1)))))
 
 ;; NOTE: taken from the scala-indent package and modified for Jai.
 ;;   Still uses the js-indent-line as a base, which will have to be
@@ -180,29 +203,28 @@
 
 (defun jai--add-self-insert-hooks ()
   (add-hook 'post-self-insert-hook
-            'jai--indent-on-parentheses)
-  )
+            'jai--indent-on-parentheses))
 
 ;;;###autoload
 (define-derived-mode jai-mode jai-parent-mode "Jai"
- :syntax-table jai-mode-syntax-table
- :group 'jai
- (setq bidi-paragraph-direction 'left-to-right)
- (setq-local require-final-newline mode-require-final-newline)
- (setq-local parse-sexp-ignore-comments t)
- (setq-local comment-start-skip "\\(//+\\|/\\*+\\)\\s *")
- (setq-local comment-start "//")
- (setq-local block-comment-start "/*")
- (setq-local block-comment-end "*/")
- (setq-local indent-line-function 'js-indent-line)
- (setq-local font-lock-defaults '(jai-font-lock-defaults))
- (setq-local beginning-of-defun-function 'jai-beginning-of-defun)
- (setq-local end-of-defun-function 'jai-end-of-defun)
+  :syntax-table jai-mode-syntax-table
+  :group 'jai
+  (setq bidi-paragraph-direction 'left-to-right)
+  (setq-local require-final-newline mode-require-final-newline)
+  (setq-local parse-sexp-ignore-comments t)
+  (setq-local comment-start-skip "\\(//+\\|/\\*+\\)\\s *")
+  (setq-local comment-start "//")
+  (setq-local block-comment-start "/*")
+  (setq-local block-comment-end "*/")
+  (setq-local indent-line-function 'js-indent-line)
+  (setq-local font-lock-defaults '(jai-font-lock-defaults))
+  (setq-local beginning-of-defun-function 'jai-beginning-of-defun)
+  (setq-local end-of-defun-function 'jai-end-of-defun)
 
- ;; add indent functionality to some characters
- (jai--add-self-insert-hooks)
+  ;; add indent functionality to some characters
+  (jai--add-self-insert-hooks)
 
- (font-lock-fontify-buffer))
+  (font-lock-ensure))
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.jai\\'" . jai-mode))
@@ -213,3 +235,4 @@
 (push 'jai compilation-error-regexp-alist)
 
 (provide 'jai-mode)
+;;; jai-mode.el ends here
