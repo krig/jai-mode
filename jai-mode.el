@@ -1,4 +1,4 @@
-;;; jai-mode.el --- Major mdoe for JAI  -*- lexical-binding: t; -*-
+;;; jai-mode.el --- Major mode for JAI  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2015-2023  Kristoffer Grönlund
 
