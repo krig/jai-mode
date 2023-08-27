@@ -66,15 +66,14 @@
     table))
 
 (defconst jai-builtins
-  '("cast" "it" "type_info" "size_of"))
+  '("it" "it_index"))
 
 (defconst jai-keywords
   '("if" "ifx" "else" "then" "while" "for" "switch" "case" "struct" "enum"
-    "return" "new" "remove" "continue" "break" "defer" "inline" "no_inline"
-    "using" "SOA"))
-
-(defconst jai-constants
-  '("null" "true" "false"))
+    "return" "remove" "continue" "break" "defer" "inline" "no_inline"
+    "using" "code_of" "initializer_of" "size_of" "type_of" "cast"  "type_info"
+    "null" "true" "false" "xx" "context" "operator" "push_context" "is_constant"
+    "enum_flags" "union" "interface"))
 
 (defconst jai-typenames
   '("int" "u64" "u32" "u16" "u8"
@@ -109,13 +108,10 @@
     ;; Variables
     (,(jai-keywords-rx jai-builtins) 1 font-lock-variable-name-face)
 
-    ;; Constants
-    (,(jai-keywords-rx jai-constants) 1 font-lock-constant-face)
-
     ;; Hash directives
     ("#\\w+" . font-lock-preprocessor-face)
 
-    ;; At directives
+    ;; At notes
     ("@\\w+" . font-lock-preprocessor-face)
 
     ;; Strings
