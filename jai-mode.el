@@ -225,7 +225,7 @@
 (add-to-list 'auto-mode-alist '("\\.jai\\'" . jai-mode))
 
 (defconst jai--error-regexp
-  "^\\([^ \n:]+.*\.jai\\):\\([0-9]+\\),\\([0-9]+\\):")
+  "\\([^ \n:]+.*\.jai\\):\\([0-9]+\\),\\([0-9]+\\):")
 (push `(jai ,jai--error-regexp 1 2 3 2) compilation-error-regexp-alist-alist)
 (push 'jai compilation-error-regexp-alist)
 
